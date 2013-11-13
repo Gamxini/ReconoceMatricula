@@ -1,0 +1,82 @@
+cd Imagenes;
+i = 6;
+A = imread(['Coche' num2str(i,'%03d') '.jpg']);
+figure, imshow(A,[]);
+cd ..
+
+a = size(A);a1 = a(1);a1 = a1/2;
+B = rgb2gray(A);
+BN = A(a1-50:a(1),1:a(2));
+
+filtro = fspecial('gaussian');
+B2 = histeq(imadjust(BN));
+B2 = medfilt2(B2);
+B3 = imfilter(B2,filtro);
+B4 = imfilter(B3,fspecial('average'));
+figure, imshow(B);pause;
+figure, imshow(BN);pause;
+
+[~,threshold] = edge(BN,'sobel');
+fudgefactor = 0.75;
+
+BW = edge(BN,'sobel',threshold*fudgefactor);
+figure, imshow(BW);pause;
+
+se90 = strel('line',3,90);
+se0 = strel('line',3,0);
+
+BW = imdilate(BW,[se90,se0]);
+figure, imshow(BW);pause;
+
+BW = imfill(BW,'holes');
+figure, imshow(BW);pause;
+
+BW = imclearborder(BW,4);
+figure, imshow(BW);pause;
+
+seD = strel('diamond',5);
+BW = imerode(BW,seD);
+figure, imshow(BW);pause;
+
+suma = sum(BW);
+suma = suma - min(suma);
+suma = suma/max(suma);
+
+figure, plot(suma);pause;
+
+[a,s] = sort(suma,'descend');
+
+i = s(1);
+j = s(1);
+
+while(suma(i)>0.32)
+    i = i-1;
+end
+
+while(suma(j)>0.32)
+    j = j+1;
+end
+
+suma2 = sum(BW');
+suma2 = suma2 - min(suma2);
+suma2 = suma2/max(suma2);
+figure, plot(suma2);pause;
+
+[a2,s2] = sort(suma2,'descend');
+
+k = s2(1);
+l = s2(1);
+
+while(suma2(k)>0.32)
+    k = k-1;
+end
+
+while(suma2(l)>0.32)
+    l = l+1;
+end
+
+sel = BN(k-5:l+5,i-5:j+5);
+figure, imshow(sel);
+
+clear;
+clc;
